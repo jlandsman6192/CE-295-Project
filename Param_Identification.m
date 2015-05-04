@@ -52,3 +52,57 @@ plot(t,theta_hat_1(:,1),t,theta_hat_1(:,2),t,theta_hat_1(:,3),t,theta_hat_1(:,4)
 ylabel('theta hat','FontSize',fs)
 xlabel('Time [hr]','FontSize',fs)
 legend('1','2','3','4','5','6','7')
+
+%% Parameter Estimates & System Matrices
+
+%Parameter Estimates
+Theta_Hat = [theta_hat_1(end-2,:), theta_hat_2(end-2,:),theta_hat_3(end-2)];
+x1_eq = 69.5; %Indoor Air Temp Equilibrium [deg F]
+u2_eq = 0; %Air Flow Equilibrium [CFM]
+u3_eq = 71.62333; %Supply Air Temp Equilibrium [deg F]
+
+
+%System matrices for identified model
+Ahat = [-(Theta_Hat(1)+Theta_Hat(2)+Theta_Hat(3)+Theta_Hat(4)*u2_eq), Theta_Hat(2), Theta_Hat(3);...
+    Theta_Hat(6), -(Theta_Hat(5)+Theta_Hat(6)), 0;...
+    Theta_Hat(7), 0, -Theta_Hat(7)];
+Bhat = [Theta_Hat(1), Theta_Hat(4)*(u3_eq-x1_eq), Theta_Hat(4)*u2_eq;...
+    Theta_Hat(5), 0, 0;
+    0, 0, 0];
+C_dummy = eye(3);
+D_dummy = 0;
+
+% State space model
+sys_hat = ss(Ahat, Bhat, C_dummy, D_dummy);
+
+%% Simulation
+
+% Input vector from validation data set
+U_hat = [air_out.'; air_flow.'; air_supply.'];
+
+% Initial conditions [deg F]
+That0 = [69.5; 68.895; 66.958];
+
+% Simulate
+[~,~,That] = lsim(sys_hat, U_hat, t, That0);
+
+%% Plot Simulation
+
+% Plot predicted and actual indoor temperature from validation data set
+figure(1); clf;
+plot(t, That(:,1), '-.', t, air_in)
+ylabel('Temperature [deg F]','FontSize',fs)
+xlabel('Time [hr]','FontSize',fs)
+legend('Predicted','True')
+
+figure(2); clf;
+plot(t, That(:,2), '-.', t, mass_wall)
+ylabel('Temperature [deg F]','FontSize',fs)
+xlabel('Time [hr]','FontSize',fs)
+legend('Predicted','True')
+
+figure(3); clf;
+plot(t, That(:,3), '-.', t, mass_floor)
+ylabel('Temperature [deg F]','FontSize',fs)
+xlabel('Time [hr]','FontSize',fs)
+legend('Predicted','True')

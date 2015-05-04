@@ -11,8 +11,8 @@ fs = 15;    % Font Size for plots
 %% Parameter Estimates & System Matrices
 
 %Parameter Estimates
-Theta_Hat = [-0.002048298, 0.05206724, 0.017183174, 0.000184428, 0.000262303,...
-    0.0772413708, 0.0026544328];
+Theta_Hat = [-0.001795951656799, 0.041697891908090, 0.018814026418969,...
+    0.000023411587492, -0.001384157589192, 0.045744360914819, 0.002968547891384];
 x1_eq = 69.5; %Indoor Air Temp Equilibrium [deg F]
 u2_eq = 0; %Air Flow Equilibrium [CFM]
 u3_eq = 71.62333; %Supply Air Temp Equilibrium [deg F]
@@ -48,7 +48,7 @@ air_flow = data(:,7);       %air flow, V [CFM]
 U_hat = [air_out.'; air_flow.'; air_supply.'];
 
 % Initial conditions [deg F]
-That0 = [70.5; 71.9; 68.3];
+That0 = [69.5; 68.895; 66.958];
 
 % Simulate
 [~,~,That] = lsim(sys_hat, U_hat, t, That0);
