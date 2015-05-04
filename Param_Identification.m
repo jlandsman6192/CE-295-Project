@@ -8,7 +8,7 @@ clc; clear; close all;
 fs = 15;    % Font Size for plots
 
 %% Load Data
-data = xlsread('VAV_data.xlsx');
+data = xlsread('VAV_data_week.xlsx');
 
 
 t = data(:,1);              %time vector [hr]
@@ -50,13 +50,14 @@ theta_hat_3 = y3;
 plot(t,theta_hat_1(:,1),t,theta_hat_1(:,2),t,theta_hat_1(:,3),t,theta_hat_1(:,4),...
     t,theta_hat_2(:,1),t,theta_hat_2(:,2),t,theta_hat_3(:))
 ylabel('theta hat','FontSize',fs)
+ylim([0 .2])
 xlabel('Time [hr]','FontSize',fs)
 legend('1','2','3','4','5','6','7')
 
 %% Parameter Estimates & System Matrices
 
 %Parameter Estimates
-Theta_Hat = [theta_hat_1(end-2,:), theta_hat_2(end-2,:),theta_hat_3(end-2)];
+Theta_Hat = [theta_hat_1(end,:), theta_hat_2(end-2,:),theta_hat_3(end)];
 x1_eq = 69.5; %Indoor Air Temp Equilibrium [deg F]
 u2_eq = 0; %Air Flow Equilibrium [CFM]
 u3_eq = 71.62333; %Supply Air Temp Equilibrium [deg F]
