@@ -41,8 +41,11 @@ air_in_plus = interp1(it,iair_in,t+dt);
 % z = \dot{T} = (T(t+dt) - T(t))/dt
 z = (air_in_plus - air_in)/dt;
 
+% Condition if airflow if greater
+s = air_flow > 400;
+
 % Assemble regressor vector, \phi
-phi = [(air_out-air_in), (mass_wall-air_in), (mass_floor-air_in), air_flow.*(air_supply-air_in)*60]';
+phi = [(air_out-air_in), (mass_wall-air_in), (mass_floor-air_in), s]';
 
 %% Gradient Update Law
 % Normalization signal
