@@ -71,7 +71,7 @@ theta_hat0_2 = multiplier*[2*1, 10*1];
 theta_hat0_3 = 2*multiplier*[1];
 
 % Update Law Gain
-eta = 10^(-1);
+eta = 10^(-2);
 Gam1 = eta*eye(4);
 Gam2 = eta*eye(2);
 Gam3 = eta*eye(1);
@@ -140,7 +140,7 @@ sys_hat = ss(Ahat, Bhat, C_dummy, D_dummy);
 U_hat = [air_out, s];
 
 % Initial conditions [deg F]
-That0 = [70; 70.5; 67];
+That0 = [air_in(1); mass_wall(1); mass_floor(1)];
 
 % Simulate
 [~,~,That] = lsim(sys_hat, U_hat, t, That0);
