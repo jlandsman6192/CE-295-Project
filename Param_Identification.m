@@ -71,7 +71,7 @@ theta_hat0_2 = multiplier*[2*1, 10*1];
 theta_hat0_3 = 2*multiplier*[1];
 
 % Update Law Gain
-eta = 10^(-1);
+eta = 10^(-2);
 Gam1 = eta*eye(4);
 Gam2 = eta*eye(2);
 Gam3 = eta*eye(1);
