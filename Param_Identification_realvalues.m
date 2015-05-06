@@ -26,7 +26,6 @@ mass_wall = data(:,5);      %wall mass temperature, T_W [deg F]
 mass_floor = data(:,6);     %floor mass temperature, T_F [deg F]
 air_flow = data(:,7);       %air flow, V [CFM]
 
-s = air_flow > 400;
 
 %% Parameter Estimates & System Matrices
 
@@ -37,7 +36,6 @@ Room_H = 10; %ft ESTIMATE
 Thick_Conc = 4; %in
 Thick_Cem = 2; %in
 Thick_Ceil = .5; %in ESTIMATE
-[max_air_flow,idx] = max(air_flow);
 
 %Material properties
 rho_Conc = 145; %lb/ft^3
@@ -53,7 +51,7 @@ Film_In = .05266; %deg F*ft^2*hr/BTU
 Film_Out = .00775; %deg F*ft^2*hr/BTU
 
 %Real parameters
-P = rho_Air*Cp_Air*max_air_flow*60*(air_out(idx)-air_in(idx)); %BTU/hr
+rhoCp = rho_Air*Cp_Air; %BTU/(deg F * ft^3)
 R_AZ = (R_Ceil*Thick_Ceil + Film_In + Film_Out)*(Room_L*Room_W); %deg F * hr/BTU
 R_FZ = (R_Conc*Thick_Conc)*(Room_L*Room_W); %deg F * hr/BTU
 R_WZ = (R_Cem*Thick_Cem + Film_In)*(Room_L + Room_W)*Room_H*2; %deg F * hr/BTU
@@ -62,12 +60,17 @@ C_Z = rho_Air*Cp_Air*(Room_L*Room_W*Room_H); %BTU/deg F
 C_W = rho_Cem*Cp_Cem*(Room_L + Room_W)*Room_H*2*Thick_Cem/12; %BTU/deg F
 C_F = rho_Conc*Cp_Conc*(Room_L*Room_W*Thick_Conc/12); %BTU/deg F
 
+%Equilibrium Points
+x1_eq = air_in(1); %Indoor Air Temp Equilibrium [deg F]
+u2_eq = air_flow(1); %Air Flow Equilibrium [CFM]
+u3_eq = air_supply(1); %Supply Air Temp Equilibrium [deg F]
+
 %System matrices for real parameters
-Ahat = [-1/C_Z*(1/R_AZ + 1/R_WZ + 1/R_FZ) 1/(C_Z*R_WZ) 1/(C_Z*R_FZ);...
+Ahat = [-1/C_Z*(1/R_AZ + 1/R_WZ + 1/R_FZ + rhoCp*u2_eq) 1/(C_Z*R_WZ) 1/(C_Z*R_FZ);...
     1/(C_W*R_WZ) -1/C_W*(1/R_AW + 1/R_WZ) 0;...
     1/(C_F*R_FZ) 0 -1/(C_F*R_FZ)];
-Bhat = [1/(C_Z*R_AZ) P/C_Z;...
-    1/(C_W*R_AW) 0; 0 0];
+Bhat = [1/(C_Z*R_AZ) 1/C_Z*(rhoCp*(u3_eq-x1_eq)) 1/C_Z*(rhoCp*u2_eq);...
+    1/(C_W*R_AW) 0 0; 0 0 0];
 C_dummy = eye(3);
 D_dummy = 0;
 
@@ -77,7 +80,7 @@ sys_hat = ss(Ahat, Bhat, C_dummy, D_dummy);
 %% Simulation
 
 % Input vector from validation data set
-U_hat = [air_out.'; s.'];
+U_hat = [air_out.'; air_flow.'; air_supply.'];
 
 % Initial conditions [deg F]
 That0 = [air_in(1); mass_wall(1); mass_floor(1)];
