@@ -116,6 +116,8 @@ p
 
 save('p_values.mat','p');
 
+load('Best_p_values.mat');
+
 Theta_Hat = p;
 % Simulate inital parameters
 
