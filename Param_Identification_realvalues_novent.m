@@ -11,10 +11,11 @@ fs = 15;    % Font Size for plots
 data = xlsread('VAV_data.xlsx');
 
 %Subset data
-days = 5;
+days = 14;
 hours = days*24;
+starting_hour = 1;
 
-data = data(1:hours,:);
+data = data(starting_hour:hours,:);
 
 t = data(:,1);              %time vector [hr]
 t = (0:(length(t)-1))';     %resample vector to start at 0
@@ -37,7 +38,7 @@ Room_H = 10; %ft ESTIMATE
 Thick_Conc = 4; %in
 Thick_Cem = 2; %in
 Thick_Ceil = .5; %in ESTIMATE
-[max_air_flow,idx] = max(air_flow);
+[max_air_flow,idx] = max(air_flow); %CFM
 
 %Material properties
 rho_Conc = 145; %lb/ft^3
@@ -49,20 +50,19 @@ Cp_Air = .2403; %BTU/(lb*deg F)
 R_Conc = .07; %deg F*ft^2*hr/(BTU*in)
 R_Cem = .26; %deg F*ft^2*hr/(BTU*in)
 R_Ceil = .45; %deg F*ft^2*hr/(BTU*in) ESTIMATE
-Film_In = .05266; %deg F*ft^2*hr/BTU
-Film_Out = .00775; %deg F*ft^2*hr/BTU
+R_Ins = 20; %deg F*ft^2*hr/BTU
+Film_In = .68; %deg F*ft^2*hr/BTU
+Film_Out = .17; %deg F*ft^2*hr/BTU
 
 %Real parameters
-Factor = 1/10000;
-
 P = rho_Air*Cp_Air*max_air_flow*60*(air_out(idx)-air_in(idx)); %BTU/hr
-R_AZ = Factor*(R_Ceil*Thick_Ceil + Film_In + Film_Out)*(Room_L*Room_W); %deg F * hr/BTU
-R_FZ = Factor*(R_Conc*Thick_Conc)*(Room_L*Room_W); %deg F * hr/BTU
-R_WZ = Factor*(R_Cem*Thick_Cem + Film_In)*(Room_L + Room_W)*Room_H*2; %deg F * hr/BTU
-R_AW = Factor*Film_Out*(Room_L + Room_W)*Room_H*2; %deg F * hr/BTU
-C_Z = Factor*rho_Air*Cp_Air*(Room_L*Room_W*Room_H); %BTU/deg F
-C_W = Factor*rho_Cem*Cp_Cem*(Room_L + Room_W)*Room_H*2*Thick_Cem/12; %BTU/deg F
-C_F = Factor*rho_Conc*Cp_Conc*(Room_L*Room_W*Thick_Conc/12); %BTU/deg F
+R_AZ = (R_Ceil*Thick_Ceil + Film_In + Film_Out)/(Room_L*Room_W); %deg F * hr/BTU
+R_FZ = (R_Conc*Thick_Conc)/(Room_L*Room_W); %deg F * hr/BTU
+R_WZ = (R_Cem*Thick_Cem + Film_In)/((Room_L + Room_W)*Room_H*2); %deg F * hr/BTU
+R_AW = (R_Ins + Film_Out)/((Room_L + Room_W)*Room_H); %deg F * hr/BTU
+C_Z = rho_Air*Cp_Air*(Room_L*Room_W*Room_H); %BTU/deg F
+C_W = rho_Cem*Cp_Cem*(Room_L + Room_W)*Room_H*2*Thick_Cem/12; %BTU/deg F
+C_F = rho_Conc*Cp_Conc*(Room_L*Room_W*Thick_Conc/12); %BTU/deg F
 
 real_params = [1/(C_Z*R_AZ) 1/(C_Z*R_WZ) 1/(C_Z*R_FZ) P...
     1/(C_W*R_AW) 1/(C_W*R_WZ) 1/(C_F*R_FZ)];

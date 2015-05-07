@@ -36,6 +36,7 @@ Room_H = 10; %ft ESTIMATE
 Thick_Conc = 4; %in
 Thick_Cem = 2; %in
 Thick_Ceil = .5; %in ESTIMATE
+[max_air_flow,idx] = max(air_flow);
 
 %Material properties
 rho_Conc = 145; %lb/ft^3
@@ -47,15 +48,15 @@ Cp_Air = .2403; %BTU/(lb*deg F)
 R_Conc = .07; %deg F*ft^2*hr/(BTU*in)
 R_Cem = .26; %deg F*ft^2*hr/(BTU*in)
 R_Ceil = .45; %deg F*ft^2*hr/(BTU*in) ESTIMATE
-Film_In = .05266; %deg F*ft^2*hr/BTU
-Film_Out = .00775; %deg F*ft^2*hr/BTU
+Film_In = .68; %deg F*ft^2*hr/BTU
+Film_Out = .17; %deg F*ft^2*hr/BTU
 
 %Real parameters
-rhoCp = rho_Air*Cp_Air; %BTU/(deg F * ft^3)
-R_AZ = (R_Ceil*Thick_Ceil + Film_In + Film_Out)*(Room_L*Room_W); %deg F * hr/BTU
-R_FZ = (R_Conc*Thick_Conc)*(Room_L*Room_W); %deg F * hr/BTU
-R_WZ = (R_Cem*Thick_Cem + Film_In)*(Room_L + Room_W)*Room_H*2; %deg F * hr/BTU
-R_AW = Film_Out*(Room_L + Room_W)*Room_H*2; %deg F * hr/BTU
+rhoCp = rho_Air*Cp_Air; %BTU/(ft^3*deg F)
+R_AZ = (R_Ceil*Thick_Ceil + Film_In + Film_Out)/(Room_L*Room_W); %deg F * hr/BTU
+R_FZ = (R_Conc*Thick_Conc)/(Room_L*Room_W); %deg F * hr/BTU
+R_WZ = (R_Cem*Thick_Cem + Film_In)/((Room_L + Room_W)*Room_H*2); %deg F * hr/BTU
+R_AW = Film_Out/((Room_L + Room_W)*Room_H*2); %deg F * hr/BTU
 C_Z = rho_Air*Cp_Air*(Room_L*Room_W*Room_H); %BTU/deg F
 C_W = rho_Cem*Cp_Cem*(Room_L + Room_W)*Room_H*2*Thick_Cem/12; %BTU/deg F
 C_F = rho_Conc*Cp_Conc*(Room_L*Room_W*Thick_Conc/12); %BTU/deg F
