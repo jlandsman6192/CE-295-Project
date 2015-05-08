@@ -32,7 +32,7 @@ mass_floor = data(:,6);     %floor mass temperature, T_F [deg F]
 air_flow = data(:,7);       %air flow, V [CFM]
 hour = data(:,8);           %time of day in [HH]
 
-% Decide weather time are unoccupied or occupied
+% Decide whether time is unoccupied or occupied
 occ = hour >= 8 & hour <= 17;
 
 % Figure out the different states from air_flow
