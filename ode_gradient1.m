@@ -42,7 +42,18 @@ air_in_plus = interp1(it,iair_in,t+dt);
 z = (air_in_plus - air_in)/dt;
 
 % Condition if airflow if greater
+% Figure out the different states from air_flow
 s = air_flow > 400;
+% s_2 = air_flow <= 400 & air_flow > 200;
+% s_3 = air_flow <= 200;
+% 
+% s_fin = air_flow;
+% 
+% s_fin(s_3)=0;
+% s_fin(s_2)=1;
+% s_fin(s)=4;
+% 
+% s = s_fin;
 
 % Assemble regressor vector, \phi
 phi = [(air_out-air_in), (mass_wall-air_in), (mass_floor-air_in), s]';

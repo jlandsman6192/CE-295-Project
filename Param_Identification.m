@@ -11,7 +11,7 @@ fs = 15;    % Font Size for plots
 data = xlsread('VAV_data.xlsx');
 
 %Subset data
-days = 5;
+days = 10;
 hours = days*24;
 
 data = data(1:hours,:);
@@ -26,11 +26,22 @@ mass_wall = data(:,5);      %wall mass temperature, T_W [deg F]
 mass_floor = data(:,6);     %floor mass temperature, T_F [deg F]
 air_flow = data(:,7);       %air flow, V [CFM]
 
+% Figure out the different states from air_flow
 s = air_flow > 400;
+% s_2 = air_flow <= 400 & air_flow > 200;
+% s_3 = air_flow <= 200;
+% 
+% s_fin = air_flow;
+% 
+% s_fin(s_3)=0;
+% s_fin(s_2)=1;
+% s_fin(s)=4;
+% 
+% s = s_fin;
 
 %% Persistance of excitation
 
-%%%% OPTION with 3-D parameter vector
+%%%% OPTION with 4-D parameter vector
 phi = [(air_out-air_in), (mass_wall-air_in), (mass_floor-air_in), s]'; % <------ enter signals for 3D parametric model
 t_end = t(end);
 PE_mat = zeros(4);
@@ -67,7 +78,7 @@ data = [t, air_in, mass_wall, mass_floor, air_out, air_flow, air_supply];
 % Initial conditions
 multiplier = 10^(-1);
 theta_hat0_1 = 2*multiplier*[1, 1, 1, 1];
-theta_hat0_2 = multiplier*[2*1, 10*1];
+theta_hat0_2 = multiplier*[2*1,10*1];
 theta_hat0_3 = 2*multiplier*[1];
 
 % Update Law Gain
@@ -99,16 +110,13 @@ ylabel({'Value of $${\theta}$$'},'interpreter','latex','FontSize',fs)
 
 
 legend({'$${\theta}_1(t)$$','$${\theta}_2(t)$$','$${\theta}_3(t)$$','$${\theta}_4(t)$$',...
-    '$${\theta}_5(t)$$','$${\theta}_6(t)$$'},'interpreter','latex','FontSize',fs)
+    '$${\theta}_5(t)$$','$${\theta}_6(t)$$','$${\theta}_7(t)$$'},'interpreter','latex','FontSize',fs)
 
 print(fig1,'.\prog_params_ID.png','-dpng');
 %% Parameter Estimates & System Matrices
 
 %Parameter Estimates
 Theta_Hat = [theta_hat_1(end-2,:), theta_hat_2(end-2,:),theta_hat_3(end-2)];
-% x1_eq = 69.5; %Indoor Air Temp Equilibrium [deg F]
-% u2_eq = 0; %Air Flow Equilibrium [CFM]
-% u3_eq = 71.62333; %Supply Air Temp Equilibrium [deg F]
 
 Ahat = [(-Theta_Hat(1)-Theta_Hat(2)-Theta_Hat(3)), Theta_Hat(2), Theta_Hat(3);...
         Theta_Hat(6), -Theta_Hat(5)-Theta_Hat(6), 0;...
@@ -117,15 +125,6 @@ Ahat = [(-Theta_Hat(1)-Theta_Hat(2)-Theta_Hat(3)), Theta_Hat(2), Theta_Hat(3);..
 Bhat = [Theta_Hat(1), Theta_Hat(4);...
         Theta_Hat(5), 0;...
         0, 0];
-
-% 
-% %System matrices for identified model
-% Ahat = [-(Theta_Hat(1)+Theta_Hat(2)+Theta_Hat(3)+Theta_Hat(4)*u2_eq), Theta_Hat(2), Theta_Hat(3);...
-%     Theta_Hat(6), -(Theta_Hat(5)+Theta_Hat(6)), 0;...
-%     Theta_Hat(7), 0, -Theta_Hat(7)];
-% Bhat = [Theta_Hat(1), Theta_Hat(4)*(u3_eq-x1_eq), Theta_Hat(4)*u2_eq;...
-%     Theta_Hat(5), 0, 0;
-%     0, 0, 0];
 
 % Output states only (dummy variables, not used later)
 C_dummy = eye(3);
