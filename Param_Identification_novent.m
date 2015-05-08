@@ -11,7 +11,7 @@ fs = 15;    % Font Size for plots
 data = xlsread('VAV_data.xlsx');
 
 %Subset data
-days = 5;
+days = 10;
 hours = days*24;
 
 data = data(1:hours,:);
@@ -26,11 +26,12 @@ mass_wall = data(:,5);      %wall mass temperature, T_W [deg F]
 mass_floor = data(:,6);     %floor mass temperature, T_F [deg F]
 air_flow = data(:,7);       %air flow, V [CFM]
 
+% Figure out the different states from air_flow
 s = air_flow > 400;
 
 %% Persistance of excitation
 
-%%%% OPTION with 3-D parameter vector
+%%%% PE of phi 1
 phi = [(air_out-air_in), (mass_wall-air_in), (mass_floor-air_in), s]'; % <------ enter signals for 3D parametric model
 t_end = t(end);
 PE_mat = zeros(4);
@@ -57,7 +58,38 @@ PE_mat(3,4) = 1/t_end * trapz(t, phi_sq(3,4,:));
 PE_mat(4,4) = 1/t_end * trapz(t, phi_sq(4,4,:));
 
 PE_lam_min = min(eig(PE_mat));
-fprintf(1,'PE Level for 4D Version : %1.4f\n',PE_lam_min);
+fprintf(1,'PE Level for Phi_1: %1.4f\n',PE_lam_min);
+
+%%%% PE of phi 2
+phi = [(air_out-mass_wall), (air_in-mass_wall)]'; % <------ enter signals for 3D parametric model
+t_end = t(end);
+PE_mat = zeros(2);
+
+phi_sq = zeros(2,2,length(t));
+for k = 1:length(t)
+    phi_sq(:,:,k) = phi(:,k) * phi(:,k)';
+end
+PE_mat(1,1) = 1/t_end * trapz(t, phi_sq(1,1,:));
+PE_mat(2,1) = 1/t_end * trapz(t, phi_sq(2,1,:));
+PE_mat(1,2) = 1/t_end * trapz(t, phi_sq(1,2,:));
+PE_mat(2,2) = 1/t_end * trapz(t, phi_sq(2,2,:));
+
+PE_lam_min = min(eig(PE_mat));
+fprintf(1,'PE Level for Phi_2: %1.4f\n',PE_lam_min);
+
+%%%% PE of phi 3
+phi = [(air_in-mass_floor)]'; % <------ enter signals for 3D parametric model
+t_end = t(end);
+PE_mat = zeros(1);
+
+phi_sq = zeros(1,1,length(t));
+for k = 1:length(t)
+    phi_sq(:,:,k) = phi(:,k) * phi(:,k)';
+end
+PE_mat(1,1) = 1/t_end * trapz(t, phi_sq(1,1,:));
+
+PE_lam_min = min(eig(PE_mat));
+fprintf(1,'PE Level for Phi_3: %1.4f\n',PE_lam_min);
 
 
 %% Problem 4(b)
@@ -67,11 +99,11 @@ data = [t, air_in, mass_wall, mass_floor, air_out, air_flow, air_supply];
 % Initial conditions
 multiplier = 10^(-1);
 theta_hat0_1 = 2*multiplier*[1, 1, 1, 1];
-theta_hat0_2 = multiplier*[2*1, 10*1];
+theta_hat0_2 = multiplier*[2, 10];
 theta_hat0_3 = 2*multiplier*[1];
 
 % Update Law Gain
-eta = 10^(-2);
+eta = 10^(-1);
 Gam1 = eta*eye(4);
 Gam2 = eta*eye(2);
 Gam3 = eta*eye(1);
@@ -94,7 +126,7 @@ plot(t,theta_hat_1(:,1),t,theta_hat_1(:,2),t,theta_hat_1(:,3),t,theta_hat_1(:,4)
 
 ylim([-.1 1.1])
 title('Progression of Parameter Identification','FontSize',fs*1.5)
-xlabel('Time [hr]','FontSize',fs)
+xlabel('Time [hr]','interpreter','latex','FontSize',fs)
 ylabel({'Value of $${\theta}$$'},'interpreter','latex','FontSize',fs)
 
 

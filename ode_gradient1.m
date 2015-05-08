@@ -30,6 +30,9 @@ air_out = interp1(it,iair_out,t);
 air_flow = interp1(it,iair_flow,t);
 air_supply = interp1(it,iair_supply,t);
 
+% Figure out the different states from air_flow
+s = air_flow > 400;
+
 %% Parametric model notation
 % Samping time step
 dt = 1;
@@ -42,7 +45,7 @@ air_in_plus = interp1(it,iair_in,t+dt);
 z = (air_in_plus - air_in)/dt;
 
 % Assemble regressor vector, \phi
-phi = [(air_out-air_in), (mass_wall-air_in), (mass_floor-air_in), air_flow.*(air_supply-air_in)*60]';
+phi = [(air_out-air_in), (mass_wall-air_in), (mass_floor-air_in), s]';
 
 %% Gradient Update Law
 % Normalization signal
