@@ -70,7 +70,7 @@ title('State variable','FontSize',fs*1.5)
 ylabel('State','FontSize',fs);
 xlabel('Time [hr]','FontSize',fs);
 
-print(fig2,'.\state_variable.png','-dpng');
+%print(fig2,'.\state_variable.png','-dpng');
 
 %% Visualize inital estimates
 load('./params_estimate.mat')
@@ -190,7 +190,7 @@ xlabel('Time [hr]','FontSize',fs)
 legend('Predicted','True')
 
 % Save Plot
-print(fig1,'.\nonlin_estimate_air_in.png','-dpng');
+%print(fig1,'.\nonlin_estimate_air_in.png','-dpng');
 
 % Plot predicted and actual mass wall temperature from validation data set
 fig2 = figure(2); clf;
@@ -202,7 +202,7 @@ xlabel('Time [hr]','FontSize',fs)
 legend('Predicted','True')
 
 % Save plot 
-print(fig2,'.\nonlin_estimate_mass_wall.png','-dpng');
+%print(fig2,'.\nonlin_estimate_mass_wall.png','-dpng');
 
 % Plot predicted and actual mass floortemperature from validation data set
 fig3 = figure(3); clf;
@@ -214,17 +214,19 @@ xlabel('Time [hr]','FontSize',fs)
 legend('Predicted','True')
 
 % Save plot 
-print(fig3,'.\nonlin_estimate_mass_floor.png','-dpng');
+%print(fig3,'.\nonlin_estimate_mass_floor.png','-dpng');
+
 
 %% Optimization of the state variable
 
 %% Grid State and Preallocate
+s_grid = [0 1]';
 
 % Grid size
 ns = 2;  % No. of states
 
 % Planning horizon (time steps)
-N = length(t_0);
+N = length(t);
 
 % Preallocate Value Function (rows index state, columns index time)
 V = inf*ones(ns,N+1);
@@ -235,44 +237,59 @@ u_star = zeros(ns,N);
 %% Solve DP
 tic;
 
-
-
-
 % Boundary Condition of Value Function (Principle of Optimality)
 V(:,N+1) = 0;
 
-% Iterate backward in time
+% Iterate time steps
 for k = N:-1:1
 
-    % Iterate over SOC
+    % Iterate over grid
     for idx = 1:ns
         
-        % Find dominant bounds
+        % Compute T_opt
+        %if k=1
+        %    That0 = [70; 70.5; 67];
+        %else
+        %    That0 = [That_air(k-1,idx);That_wall(k-1,idx);That_floor(k-1,idx)];
+        %end
+                
+        %if idx = 1
+        %    U_hat = [air_out(k-1:k), zeros(1,2)];
+        %else
+        %    U_hat = [air_out(k-1:k), ones(1,2)];
+        %end
         
+        %[~,~, That_opt] = lsim(sys_hat, U_hat, t(k-1:k), That0);
+        %That_air(k,idx) = That_opt(2,1);
+        %That_wall(k,idx) = That_opt(2,2);
+        %That_floor(k,idx) = That_opt(2,3);
+        %T_op(k,idx) = 1/3*(That_air(k,idx) + That_wall(k,idx) + That_floor(k,idx));
         
-        lb = max([(-Qcap*V_oc/Delta_t)*(SOC_max - SOC_grid(idx)); -1*P_batt_max; P_dem(k)-P_eng_max]);
-        ub = min([(-Qcap*V_oc/Delta_t)*(SOC_min - SOC_grid(idx)); P_batt_max; P_dem(k)]);
+        % Operative Temp dominant bounds
+        lb = 60; ub = 85;
+        T_op_grid = linspace(lb,ub,50)';
         
-        % Grid Battery Power between dominant bounds
-        P_batt_grid = linspace(lb,ub,200)';
-        
-        % Compute engine power (vectorized for all P_batt_grid)
-        P_eng = (P_dem(k)-P_batt_grid);
-        
-        % Cost-per-time-step (vectorized for all P_batt_grid)
-        g_k = alph*Delta_t*(P_eng./eta_eng(P_eng));
-        
-        % Calculate next SOC (vectorized for all P_batt_grid)
-        SOC_nxt = SOC_grid(idx) - (Delta_t/(Qcap*V_oc))*P_batt_grid;
+        % Calculate next s (vectorized for all T_op_grid)
+        for i = 1:length(T_op_grid)
+            if k > 1
+                if T_op_grid(i)<=69 && T_op_grid(i)>=78 && occ(k-1)==1
+                    s_nxt(i) = 1;
+                else
+                    s_nxt(i) = 0;
+                end
+            else
+                s_nxt(i) = 0;
+            end
+        end
         
         % Compute value function at nxt time step (need to interpolate)
-        V_nxt = interp1(SOC_grid,V(:,k+1),SOC_nxt,'linear');
+        V_nxt = interp1(s_grid,V(:,k+1),s_nxt,'linear');
         
         % Value Function (Principle of Optimality)
-        [V(idx, k), ind] = min(g_k + V_nxt);
+        [V(idx, k), ind] = min(V_nxt);
         
         % Save Optimal Control
-        u_star(idx,k) = P_batt_grid(ind);
+        u_star(idx,k) = T_op_grid(ind);
 
     end
 end
