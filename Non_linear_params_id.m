@@ -30,6 +30,7 @@ air_in = data(:,4);         %indoor air temperature, T_Z [deg F]
 mass_wall = data(:,5);      %wall mass temperature, T_W [deg F]
 mass_floor = data(:,6);     %floor mass temperature, T_F [deg F]
 air_flow = data(:,7);       %air flow, V [CFM]
+hour = data(:,8);           %time of day in [HH]
 
 % Figure out the different states from air_flow
 s = air_flow > 400;
@@ -211,4 +212,65 @@ legend('Predicted','True')
 
 % Save plot 
 print(fig3,'.\nonlin_estimate_mass_floor.png','-dpng');
+
+%% Optimization of the state variable
+
+%% Grid State and Preallocate
+
+% Grid size
+ns = 2;  % No. of states
+
+% Planning horizon (time steps)
+N = length(t_0);
+
+% Preallocate Value Function (rows index state, columns index time)
+V = inf*ones(ns,N+1);
+
+% Preallocate Control (rows index state, columns index time)
+u_star = zeros(ns,N);
+
+%% Solve DP
+tic;
+
+% Boundary Condition of Value Function (Principle of Optimality)
+V(:,N+1) = 0;
+
+% Iterate backward in time
+for k = N:-1:1
+
+    % Iterate over SOC
+    for idx = 1:ns
+        
+        % Find dominant bounds
+        
+        
+        lb = max([(-Qcap*V_oc/Delta_t)*(SOC_max - SOC_grid(idx)); -1*P_batt_max; P_dem(k)-P_eng_max]);
+        ub = min([(-Qcap*V_oc/Delta_t)*(SOC_min - SOC_grid(idx)); P_batt_max; P_dem(k)]);
+        
+        % Grid Battery Power between dominant bounds
+        P_batt_grid = linspace(lb,ub,200)';
+        
+        % Compute engine power (vectorized for all P_batt_grid)
+        P_eng = (P_dem(k)-P_batt_grid);
+        
+        % Cost-per-time-step (vectorized for all P_batt_grid)
+        g_k = alph*Delta_t*(P_eng./eta_eng(P_eng));
+        
+        % Calculate next SOC (vectorized for all P_batt_grid)
+        SOC_nxt = SOC_grid(idx) - (Delta_t/(Qcap*V_oc))*P_batt_grid;
+        
+        % Compute value function at nxt time step (need to interpolate)
+        V_nxt = interp1(SOC_grid,V(:,k+1),SOC_nxt,'linear');
+        
+        % Value Function (Principle of Optimality)
+        [V(idx, k), ind] = min(g_k + V_nxt);
+        
+        % Save Optimal Control
+        u_star(idx,k) = P_batt_grid(ind);
+
+    end
+end
+
+solveTime = toc;
+fprintf(1,'DP Solver Time %2.2f sec \n',solveTime);
 
