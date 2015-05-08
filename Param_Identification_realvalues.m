@@ -93,19 +93,19 @@ That0 = [air_in(1); mass_wall(1); mass_floor(1)];
 
 % Plot predicted and actual indoor temperature from validation data set
 figure(1); clf;
-plot(t, That(:,1), '-.', t, air_in)
+plot(t, That(:,1), '-.', t, air_in,'LineWidth',1.5)
 ylabel('Temperature [deg F]','FontSize',fs)
 xlabel('Time [hr]','FontSize',fs)
 legend('Predicted','True')
 
 figure(2); clf;
-plot(t, That(:,2), '-.', t, mass_wall)
+plot(t, That(:,2), '-.', t, mass_wall,'LineWidth',1.5)
 ylabel('Temperature [deg F]','FontSize',fs)
 xlabel('Time [hr]','FontSize',fs)
 legend('Predicted','True')
 
 figure(3); clf;
-plot(t, That(:,3), '-.', t, mass_floor)
+plot(t, That(:,3), '-.', t, mass_floor,'LineWidth',1.5)
 ylabel('Temperature [deg F]','FontSize',fs)
 xlabel('Time [hr]','FontSize',fs)
 legend('Predicted','True')

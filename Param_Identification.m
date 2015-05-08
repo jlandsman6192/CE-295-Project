@@ -87,7 +87,7 @@ theta_hat_3 = y3;
 %% Plot theta_hat
 fig1 = figure(1);
 plot(t,theta_hat_1(:,1),t,theta_hat_1(:,2),t,theta_hat_1(:,3),t,theta_hat_1(:,4),...
-    t,theta_hat_2(:,1),t,theta_hat_2(:,2),t,theta_hat_3(:))
+    t,theta_hat_2(:,1),t,theta_hat_2(:,2),t,theta_hat_3(:),'LineWidth',1.5)
 
 ylim([0 .2])
 title('Progression of Parameter Identification','FontSize',fs*1.5)
@@ -97,6 +97,7 @@ ylabel({'Value of $${\theta}$$'},'interpreter','latex','FontSize',fs)
 
 legend({'$${\theta}_1(t)$$','$${\theta}_2(t)$$','$${\theta}_3(t)$$','$${\theta}_4(t)$$',...
     '$${\theta}_5(t)$$','$${\theta}_6(t)$$','$${\theta}_7(t)$$'},'interpreter','latex','FontSize',fs)
+
 
 %% Parameter Estimates & System Matrices
 
@@ -136,19 +137,19 @@ That0 = [air_in(1); mass_wall(1); mass_floor(1)];
 
 % Plot predicted and actual indoor temperature from validation data set
 figure(1); clf;
-plot(t, That(:,1), '-.', t, air_in)
+plot(t, That(:,1), '-.', t, air_in,'LineWidth',1.5)
 ylabel('Temperature [deg F]','FontSize',fs)
 xlabel('Time [hr]','FontSize',fs)
 legend('Predicted','True')
 
 figure(2); clf;
-plot(t, That(:,2), '-.', t, mass_wall)
+plot(t, That(:,2), '-.', t, mass_wall,'LineWidth',1.5)
 ylabel('Temperature [deg F]','FontSize',fs)
 xlabel('Time [hr]','FontSize',fs)
 legend('Predicted','True')
 
 figure(3); clf;
-plot(t, That(:,3), '-.', t, mass_floor)
+plot(t, That(:,3), '-.', t, mass_floor,'LineWidth',1.5)
 ylabel('Temperature [deg F]','FontSize',fs)
 xlabel('Time [hr]','FontSize',fs)
 legend('Predicted','True')
