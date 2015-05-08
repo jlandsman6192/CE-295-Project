@@ -1,6 +1,13 @@
 %% CE 295 - Energy Systems and Control
 %   Term Project
 %   Non-Linear Parameter Identification
+%   Prof. Moura
+%
+%   This script will perform a non linear optimization of parameters.
+%   Initial parameters are taken from the final results from gradient 
+%   descent method.  
+
+%   Functions need to run this script are 'mle_error.m' and 'build_sim.m'.
 
 % Non_linear_param_id.m
 
@@ -14,12 +21,14 @@ data = xlsread('VAV_data.xlsx');
 days = 10;
 hours = days*24;
 
-% Times for validation data
-t_0 = [10:hours];    % training data
-t_1 = [400:600];    % validation data 1; state is always 0
-t_2 = [1575:1750];  % validation data 2; state has night ventilation 
+% Times for training data
+t_0 = [10:hours];           % training data
 
-data = data(t_0,:);
+% Times for validation data
+t_1 = [400:600];            % validation data 1; state is always 0
+t_2 = [1575:1750];          % validation data 2; state has night ventilation 
+
+data = data(t_0,:);         % Subset data
 
 t = data(:,1);              %time vector [hr]
 t = (0:(length(t)-1))';     %resample vector to start at 0
@@ -58,11 +67,13 @@ title('Building Trends','FontSize',fs*1.5)
 ylabel('Temperature','FontSize',fs);
 xlabel('Time [hr]','FontSize',fs);
 hold on
+
 % Plot airflow vs time
 plot(t,air_flow*.2,'k','LineWidth',1.5);
 legend('Outdoor', 'Indoor','Airflow');
 hold off
 
+% Plot state variable of the data
 fig2 = figure(2);
 plot(t,s,'LineWidth',1.5);
 ylim([0 2]);
@@ -72,7 +83,7 @@ xlabel('Time [hr]','FontSize',fs);
 
 %print(fig2,'.\state_variable.png','-dpng');
 
-%% Visualize inital estimates
+%% Visualize inital parameter estimates
 load('./params_estimate.mat')
 
 % Simulate inital parameters
@@ -103,6 +114,8 @@ That0 = [70; 70.5; 67];
 [~,~, That] = lsim(sys_hat, U_hat, t, That0);
 
 % Plot initial parameter estimations
+
+% Plot indoor air temp predicted results with actual results
 figure(1); clf;
 plot(t, That(:,1), '-.', t, air_in,'LineWidth',1.5)
 title('Indoor Temperature Prediction','FontSize',fs*1.5)
@@ -111,6 +124,7 @@ ylabel('Temperature [deg F]','FontSize',fs)
 xlabel('Time [hr]','FontSize',fs)
 legend('Predicted','True')
 
+% Plot mass wall temp predicted results with actual results
 figure(2); clf;
 plot(t, That(:,2), '-.', t, mass_wall,'LineWidth',1.5)
 title('Mass Wall Temperature Prediction','FontSize',fs*1.5)
@@ -119,6 +133,7 @@ ylabel('Temperature [deg F]','FontSize',fs)
 xlabel('Time [hr]','FontSize',fs)
 legend('Predicted','True')
 
+% Plot mass floor temp predicted results with actual results
 figure(3); clf;
 plot(t, That(:,3), '-.', t, mass_floor,'LineWidth',1.5)
 title('Mass Floor Temperature Prediction','FontSize',fs*1.5)
@@ -129,6 +144,7 @@ legend('Predicted','True')
 
 %% Parameter Estimation using lsqnonlin
 
+% Options for for the algorithm
 optim_options = optimset('Display', 'iter',...
 'TolFun', 1e-10,... %default: 1e-4
 'TolX', 1e-6... %default: 1e-4
@@ -138,12 +154,14 @@ optim_options = optimset('Display', 'iter',...
 %'Algorithm','levenberg-marquardt'); %default: 
 %optim_options = [];
 
+% Nonlinear optimization of parameters
 [p,resnorm,residual] = lsqnonlin(@mle_error, Theta_Hat, [],[],optim_options,...
     t, U_hat, That0, air_in, mass_wall, mass_floor);
 disp('Finished parameter estimation and new theta hat is')
 p
 
 % Save p values for later use
+% uncomment when performing predictions
 %save('p_values.mat','p');
 
 % Load best values for parameters

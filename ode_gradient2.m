@@ -1,6 +1,6 @@
 %% CE 295 - Energy Systems and Control
-%   HW 2 : Parameter Identification for a Smart Home Thermostat
-%   Jared Landsman, SID 25952611
+%   Term Project
+%   Parameter Identification
 %   Prof. Moura
 
 % ode_gradient2.m

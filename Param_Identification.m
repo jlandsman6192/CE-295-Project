@@ -1,6 +1,11 @@
 %% CE 295 - Energy Systems and Control
 %   Term Project
 %   Parameter Identification
+%   Prof. Moura
+
+%   This script will perform a gradient descent on the parameters to estimate
+%   them. It also calculates the persistance of excitation for the data.
+%   This script uses 'ode_gradient1.m', 'ode_gradient2.m', 'ode_gradient3.m'
 
 % Param_Identification.m
 
@@ -58,7 +63,7 @@ PE_lam_min = min(eig(PE_mat));
 fprintf(1,'PE Level for 4D Version : %1.4f\n',PE_lam_min);
 
 
-%% Problem 4(b)
+%% Gradient Descent parameter identification
 % Assemble Data
 data = [t, air_in, mass_wall, mass_floor, air_out, air_flow, air_supply];
 
@@ -116,6 +121,8 @@ Ahat = [-(Theta_Hat(1)+Theta_Hat(2)+Theta_Hat(3)+Theta_Hat(4)*u2_eq), Theta_Hat(
 Bhat = [Theta_Hat(1), Theta_Hat(4)*(u3_eq-x1_eq), Theta_Hat(4)*u2_eq;...
     Theta_Hat(5), 0, 0;
     0, 0, 0];
+
+% Output states only (dummy variables, not used later)
 C_dummy = eye(3);
 D_dummy = 0;
 
@@ -142,12 +149,14 @@ ylabel('Temperature [deg F]','FontSize',fs)
 xlabel('Time [hr]','FontSize',fs)
 legend('Predicted','True')
 
+% Plot mass wall temp predicted results with actual results
 figure(2); clf;
 plot(t, That(:,2), '-.', t, mass_wall,'LineWidth',1.5)
 ylabel('Temperature [deg F]','FontSize',fs)
 xlabel('Time [hr]','FontSize',fs)
 legend('Predicted','True')
 
+% Plot mass floor temp predicted results with actual results
 figure(3); clf;
 plot(t, That(:,3), '-.', t, mass_floor,'LineWidth',1.5)
 ylabel('Temperature [deg F]','FontSize',fs)

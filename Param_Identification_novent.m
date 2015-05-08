@@ -1,8 +1,13 @@
 %% CE 295 - Energy Systems and Control
 %   Term Project
-%   Parameter Identification
+%   Parameter Identification with no ventilation
+%   Prof. Moura
 
-% Param_Identification.m
+%   This script will perform a gradient descent on the parameters to estimate
+%   them. It also calculates the persistance of excitation for the data.
+%   This script uses 'ode_gradient1.m', 'ode_gradient2.m', 'ode_gradient3.m'
+
+% Param_Identification_novent.m
 
 clc; clear; close all;
 fs = 15;    % Font Size for plots
@@ -92,7 +97,7 @@ PE_lam_min = min(eig(PE_mat));
 fprintf(1,'PE Level for Phi_3: %1.4f\n',PE_lam_min);
 
 
-%% Problem 4(b)
+%% Gradient Descent parameter identification
 % Assemble Data
 data = [t, air_in, mass_wall, mass_floor, air_out, air_flow, air_supply];
 
@@ -181,6 +186,7 @@ legend('Predicted','True')
 % Save the plot
 print(fig1,'.\grad_init_pred_air.png','-dpng');
 
+% Plot mass wall temp predicted results with actual results
 fig2 = figure(2); clf;
 plot(t, That(:,2), '-.', t, mass_wall,'LineWidth',1.5)
 title('Mass Wall Temperature Prediction','FontSize',fs*1.5)
@@ -192,6 +198,7 @@ legend('Predicted','True')
 % Save the plot
 print(fig2,'.\grad_init_pred_m_wall.png','-dpng');
 
+% Plot mass floor temp predicted results with actual results
 fig3 = figure(3); clf;
 plot(t, That(:,3), '-.', t, mass_floor,'LineWidth',1.5)
 title('Mass Floor Temperature Prediction','FontSize',fs*1.5)
