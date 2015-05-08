@@ -32,6 +32,9 @@ mass_floor = data(:,6);     %floor mass temperature, T_F [deg F]
 air_flow = data(:,7);       %air flow, V [CFM]
 hour = data(:,8);           %time of day in [HH]
 
+% Decide weather time are unoccupied or occupied
+occ = hour >= 8 & hour <= 17;
+
 % Figure out the different states from air_flow
 s = air_flow > 400;
 
@@ -52,7 +55,7 @@ figure(1)
 plot(t,air_out,t,air_in,'LineWidth',1.5);
 ylim([50 80])
 title('Building Trends','FontSize',fs*1.5)
-ylabel('Temperature','FontSize',fs*1.5);
+ylabel('Temperature','FontSize',fs);
 xlabel('Time [hr]','FontSize',fs);
 hold on
 % Plot airflow vs time
@@ -64,7 +67,7 @@ fig2 = figure(2);
 plot(t,s,'LineWidth',1.5);
 ylim([0 2]);
 title('State variable','FontSize',fs*1.5)
-ylabel('State','FontSize',fs*1.5);
+ylabel('State','FontSize',fs);
 xlabel('Time [hr]','FontSize',fs);
 
 print(fig2,'.\state_variable.png','-dpng');
@@ -231,6 +234,9 @@ u_star = zeros(ns,N);
 
 %% Solve DP
 tic;
+
+
+
 
 % Boundary Condition of Value Function (Principle of Optimality)
 V(:,N+1) = 0;
